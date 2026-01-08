@@ -48,12 +48,6 @@ const config = [
         ],
         required: true,
       },
-      // {
-      //   id: "state",
-      //   type: "custom",
-      //   component: "USStatePicker",
-      //   required: true,
-      // },
     ],
   },
   {
@@ -104,7 +98,7 @@ const config = [
     title: "Security",
     fields: [
       {
-        id: "securityBlock",
+        id: "passwordComp",
         type: "custom",
         component: "PasswordComponent",
         required: true,

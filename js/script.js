@@ -12,14 +12,16 @@ const GenerateForm = (() => {
     const nextButtonLabel = document.getElementById('nextButtonLabel')
     const main = document.getElementById('main')
 
-    const refresh = () => {
+    const createFormElement = () => {
         const activeId = document.activeElement ? document.activeElement.id : null;
         const step = config[state.currentStep];
         const isTransition = state.currentStep !== state.lastStepRendered;
         state.lastStepRendered = state.currentStep;
 
-        steps.innerHTML = config.map((s, idx) => `
-            <div class="flex items-center gap-2 group cursor-pointer shrink-0" onclick="GenerateForm.jumpTo(${idx})">
+        const {fields, title} = step;
+
+        steps.innerHTML = config.map((_, idx) => `
+            <div class="flex items-center gap-2 group cursor-pointer shrink-0">
                 <div class="step-pill w-8 h-8 rounded-xl flex items-center justify-center text-xs text-white border-2 transition-all 
                     ${idx === state.currentStep ? 'border-black text-black bg-yellow-100' : idx < state.currentStep ? 'border-green-500 bg-green-100 text-black' : 'border-black text-black cursor-not-allowed'}">
                     ${idx + 1}
@@ -28,7 +30,7 @@ const GenerateForm = (() => {
         `).join('');
 
         let generateFormElement = '';
-        step.fields.forEach(formField => {
+        fields.forEach(formField => {
             if (formField.dependsOn && state.data[formField.dependsOn.field] !== formField.dependsOn.value) return;
             const fieldVal = state.data[formField.id] || '';
 
@@ -38,16 +40,16 @@ const GenerateForm = (() => {
                 generateFormElement += `
                     <div class="space-y-2">
                         <label class="text-sm font-bold text-black">${formField.label}</label>
-                        <select id="${formField.id}" class="w-full p-4 bg-blackborder border-lightgray border-2 rounded-2xl">
+                        <select id="${formField.id}" class="w-full p-4 border-lightgray border-2 rounded-2xl">
                             <option value="" disabled ${!fieldVal ? 'selected' : ''}>Select...</option>
-                            ${formField.options.map(o => `<option value="${o.value}" ${fieldVal === o.value ? 'selected' : ''}>${o.label}</option>`).join('')}
+                            ${formField.options.map(option => `<option value="${option.value}" ${fieldVal === option.value ? 'selected' : ''}>${option.label}</option>`).join('')}
                         </select>
                     </div>
                 `;
             } else if (formField.type === 'checkbox') {
                  generateFormElement += `
                     <label class="flex items-center space-x-3 p-5 border-lightgray border-2 rounded-2xl cursor-pointer">
-                        <input type="checkbox" id="${formField.id}" ${state.data[formField.id] ? 'checked' : ''} class="w-6 h-6 rounded text-blue-600 border-black">
+                        <input type="checkbox" id="${formField.id}" ${state.data[formField.id] ? 'checked' : ''} class="w-6 h-6 rounded border-black">
                         <span class="text-sm font-bold text-black">${formField.label}</span>
                     </label>
                 `;
@@ -63,7 +65,7 @@ const GenerateForm = (() => {
 
         stepsData.innerHTML = `
             <div class="${isTransition ? 'step-entry-anim' : ''}">
-                <p class="text-black mb-10 font-medium">${step.title}</p>
+                <p class="text-black mb-10 font-medium">${title}</p>
                 <div class="space-y-6">${generateFormElement}</div>
             </div>
         `;
@@ -72,56 +74,63 @@ const GenerateForm = (() => {
         nextButtonLabel.textContent = (state.currentStep === config.length - 1) ? 'Submit Application' : 'Continue';
         updateValidation();
 
-        stepsData.querySelectorAll('input, select').forEach(el => {
-            el.oninput = (e) => {
+        stepsData.querySelectorAll('input, select').forEach(element => {
+            element.oninput = (e) => {
                 const val = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
                 updateField(e.target.id, val);
             };
         });
+
         if (activeId) {
-            const el = document.getElementById(activeId);
-            if (el) {
-                el.focus();
-                // Restore cursor position exactly where it was
-                if (selectionStart !== null && el.setSelectionRange) {
-                    el.setSelectionRange(selectionStart, selectionStart);
-                }
+            const activeElement = document.getElementById(activeId);
+            if (activeElement) {
+                activeElement.focus();
             }
         }
     };
 
     const updateValidation = () => {
-        const step = config[state.currentStep];
-        const isValid = step.fields.every(formField => {
-            if (formField.dependsOn && state.data[formField.dependsOn.field] !== formField.dependsOn.value) return true;
-            if (!formField.required) return true;
-            const val = state.data[formField.id] || '';
-            if (formField.validate) return formField.validate(val);
-            if (formField.id === 'securityBlock') return !!state.data.password && state.data.password === state.data.confirmPassword && state.data.password.length >= 8;
-            return !!val;
+        const { fields } = config[state.currentStep];
+    
+        const isStepValid = fields.every(field => {
+            const value = state.data[field.id] || '';
+            if (field.dependsOn && state.data[field.dependsOn.field] !== field.dependsOn.value) {
+                return true;
+            }
+            if (!field.required && !value) return true;
+            if (field.id === 'passwordComp') {
+                const { password, confirmPassword } = state.data;
+                return password && password === confirmPassword && password.length >= 8;
+            }
+            return field.validate ? field.validate(value) : !!value;
         });
-        nextButton.disabled = !isValid;
+    
+        nextButton.disabled = !isStepValid;
     };
 
     const updateField = (key, val) => {
         state.data[key] = val;
-        const step = config[state.currentStep];
-        const isReactive = step.fields.some(formField => formField.dependsOn?.field === key) || 
-                           step.fields.some(formField => formField.id === key && formField.type === 'custom') ||
-                           ['password', 'confirmPassword', 'state', 'otp'].includes(key);
-
-        if (isReactive) refresh();
-        else updateValidation();
+        const { fields } = config[state.currentStep];
+    
+        const keysForRerender = ['password', 'confirmPassword'];
+    
+        const needsRebuild = 
+            keysForRerender.includes(key) || 
+            fields.some(f => f.dependsOn?.field === key || (f.id === key && f.type === 'custom'));
+    
+        if (needsRebuild) {
+            createFormElement();
+        } else {
+            updateValidation();
+        }
     };
-
-    const jumpTo = (i) => { if (i < state.currentStep) { state.currentStep = i; refresh(); } };
 
     return {
         start: () => {
             nextButton.onclick = () => {
                 if (state.currentStep < config.length - 1) {
                     state.currentStep++;
-                    refresh();
+                    createFormElement();
                     stepsData.scrollTop = 0;
                 } else {
                     main.innerHTML = `
@@ -131,11 +140,10 @@ const GenerateForm = (() => {
                     `;
                 }
             };
-            backButton.onclick = () => { if (state.currentStep > 0) { state.currentStep--; refresh(); } };
-            refresh();
+            backButton.onclick = () => { if (state.currentStep > 0) { state.currentStep--; createFormElement(); } };
+            createFormElement();
         },
         updateField,
-        jumpTo
     };
 })();
 
