@@ -48,12 +48,12 @@ const config = [
         ],
         required: true,
       },
-      {
-        id: "state",
-        type: "custom",
-        component: "USStatePicker",
-        required: true,
-      },
+      // {
+      //   id: "state",
+      //   type: "custom",
+      //   component: "USStatePicker",
+      //   required: true,
+      // },
     ],
   },
   {
@@ -63,7 +63,7 @@ const config = [
       {
         id: "commVerification",
         type: "custom",
-        component: reusableUiComponents.CommVerification,
+        component: "CommVerification",
         required: true,
         validate: (value) => value === '0000'
       },
@@ -106,7 +106,7 @@ const config = [
       {
         id: "securityBlock",
         type: "custom",
-        component: reusableUiComponents.PasswordComponent,
+        component: "PasswordComponent",
         required: true,
       },
     ],
@@ -131,6 +131,6 @@ const config = [
   {
     id: "review",
     title: "Review & Submit",
-    fields: [{ id: "reviewBlock", type: "custom", component: reusableUiComponents.ReviewComponent }],
+    fields: [{ id: "reviewBlock", type: "custom", component: "ReviewComponent" }],
   },
 ];

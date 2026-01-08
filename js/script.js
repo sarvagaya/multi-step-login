@@ -13,14 +13,15 @@ const GenerateForm = (() => {
     const main = document.getElementById('main')
 
     const refresh = () => {
+        const activeId = document.activeElement ? document.activeElement.id : null;
         const step = config[state.currentStep];
         const isTransition = state.currentStep !== state.lastStepRendered;
         state.lastStepRendered = state.currentStep;
 
         steps.innerHTML = config.map((s, idx) => `
-            <div class="flex items-center gap-2 group cursor-pointer shrink-0" onclick="WizardEngine.jumpTo(${idx})">
+            <div class="flex items-center gap-2 group cursor-pointer shrink-0" onclick="GenerateForm.jumpTo(${idx})">
                 <div class="step-pill w-8 h-8 rounded-xl flex items-center justify-center text-xs text-white border-2 transition-all 
-                    ${idx === state.currentStep ? 'active' : idx < state.currentStep ? 'border-green-500 bg-green-100 text-black' : 'border-slate-800 text-slate-600 cursor-not-allowed'}">
+                    ${idx === state.currentStep ? 'border-black text-black bg-yellow-100' : idx < state.currentStep ? 'border-green-500 bg-green-100 text-black' : 'border-black text-black cursor-not-allowed'}">
                     ${idx + 1}
                 </div>
             </div>
@@ -36,8 +37,8 @@ const GenerateForm = (() => {
             } else if (formField.type === 'select') {
                 generateFormElement += `
                     <div class="space-y-2">
-                        <label class="text-sm font-bold text-slate-700">${formField.label}</label>
-                        <select id="${formField.id}" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-blue-100">
+                        <label class="text-sm font-bold text-black">${formField.label}</label>
+                        <select id="${formField.id}" class="w-full p-4 bg-blackborder border-lightgray border-2 rounded-2xl">
                             <option value="" disabled ${!fieldVal ? 'selected' : ''}>Select...</option>
                             ${formField.options.map(o => `<option value="${o.value}" ${fieldVal === o.value ? 'selected' : ''}>${o.label}</option>`).join('')}
                         </select>
@@ -45,16 +46,16 @@ const GenerateForm = (() => {
                 `;
             } else if (formField.type === 'checkbox') {
                  generateFormElement += `
-                    <label class="flex items-center space-x-3 p-5 bg-slate-50 border border-slate-200 rounded-2xl cursor-pointer hover:bg-slate-100 transition-colors">
-                        <input type="checkbox" id="${formField.id}" ${state.data[formField.id] ? 'checked' : ''} class="w-6 h-6 rounded text-blue-600 border-slate-300">
-                        <span class="text-sm font-bold text-slate-700">${formField.label}</span>
+                    <label class="flex items-center space-x-3 p-5 border-lightgray border-2 rounded-2xl cursor-pointer">
+                        <input type="checkbox" id="${formField.id}" ${state.data[formField.id] ? 'checked' : ''} class="w-6 h-6 rounded text-blue-600 border-black">
+                        <span class="text-sm font-bold text-black">${formField.label}</span>
                     </label>
                 `;
             } else {
                 generateFormElement += `
-                    <div class="${formField.halfWidth ? 'inline-block w-[calc(50%-12px)] mr-2' : 'block mb-4'} space-y-2">
-                        <label class="text-sm font-bold text-slate-700">${formField.label || ''}</label>
-                        <input type="${formField.type}" id="${formField.id}" value="${fieldVal}" placeholder="${formField.placeholder || ''}" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:bg-white focus:ring-4 focus:ring-blue-100 transition-all">
+                    <div class="block mb-4 space-y-2">
+                        <label class="text-sm font-bold text-black">${formField.label || ''}</label>
+                        <input type="${formField.type}" id="${formField.id}" value="${fieldVal}" placeholder="${formField.placeholder || ''}" class="w-full p-4 border-2 border-lightgray rounded-2xl">
                     </div>
                 `;
             }
@@ -62,7 +63,7 @@ const GenerateForm = (() => {
 
         stepsData.innerHTML = `
             <div class="${isTransition ? 'step-entry-anim' : ''}">
-                <p class="text-slate-500 mb-10 font-medium">${step.title}</p>
+                <p class="text-black mb-10 font-medium">${step.title}</p>
                 <div class="space-y-6">${generateFormElement}</div>
             </div>
         `;
@@ -77,6 +78,16 @@ const GenerateForm = (() => {
                 updateField(e.target.id, val);
             };
         });
+        if (activeId) {
+            const el = document.getElementById(activeId);
+            if (el) {
+                el.focus();
+                // Restore cursor position exactly where it was
+                if (selectionStart !== null && el.setSelectionRange) {
+                    el.setSelectionRange(selectionStart, selectionStart);
+                }
+            }
+        }
     };
 
     const updateValidation = () => {
@@ -115,7 +126,7 @@ const GenerateForm = (() => {
                 } else {
                     main.innerHTML = `
                         <div class="p-20 text-center flex flex-col items-center justify-center step-entry-anim bg-white">
-                            <h2 class="text-6xl font-black text-slate-900 mb-4 tracking-tighter">Data Submitted Successfully!</h2>
+                            <h2 class="text-6xl font-black text-black mb-4 tracking-tighter">Data Submitted Successfully!</h2>
                         </div>
                     `;
                 }
