@@ -23,3 +23,16 @@ CommVerification: This is just a simple input filed which is being used as a sim
 USed a global state in the script file under the name state and we are maintaining the form steps under the name currentStep, and userEnetredData under the name data.
 Since the state we are maintainign is global in the script file, we are able to retain the data very easily and since the we have created the functo called createFormelement, we are able to display the form elements are easily map the respective data to the fields easily.
 Same is happening for back button by dcreasing the current step to -1 by check if the current step is greated than 0.
+
+# Screenshots
+<img width="1210" height="558" alt="image" src="https://github.com/user-attachments/assets/3174a977-b5d4-4b63-a09c-63f0391b6d3d" />
+<img width="1223" height="690" alt="image" src="https://github.com/user-attachments/assets/5938f642-e225-46fd-82f8-21ccb0a3b511" />
+<img width="1200" height="465" alt="image" src="https://github.com/user-attachments/assets/57ef4efb-bbda-47c7-88df-ac226131c4d1" />
+<img width="1210" height="532" alt="image" src="https://github.com/user-attachments/assets/10c153cf-b673-41ed-b994-66fb8f924f04" />
+<img width="1227" height="583" alt="image" src="https://github.com/user-attachments/assets/fe1073c0-7a0e-4626-be99-df83db60a4c3" />
+<img width="1212" height="630" alt="image" src="https://github.com/user-attachments/assets/10ad7d72-0c8b-4076-873f-702966af6f03" />
+<img width="1428" height="635" alt="image" src="https://github.com/user-attachments/assets/9ef1eeb9-31d7-4217-8bc6-b978bca10155" />
+
+
+
+
