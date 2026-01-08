@@ -6,7 +6,7 @@ const isCharacterPresent = /[^A-Za-z0-9]/;
 const utils = {
     isEmailValid: (email) => validEmailRegex.test(email),
     calculateStrongPAssword: (password) => {
-      let score = 0;
+      let strongCount = 0;
       if (!password) {
         return {
           label: "None",
@@ -16,28 +16,28 @@ const utils = {
       if (
         password.length > 5
       ) {
-        score += 1;
+        strongCount += 1;
       }
       if(checkCharacter.test(password)) {
-        score += 1
+        strongCount += 1
       }
 
       if(checkNumeric.test(password)) {
-        score += 1
+        strongCount += 1
       }
 
       if(isCharacterPresent.test(password)) {
-        score += 1
+        strongCount += 1
       }
     
-      if (score >= 4) {
+      if (strongCount >= 4) {
         return {
           label: "Strong",
           textColor: "bg-green-800",
         };
       }
     
-      if (score >= 2) {
+      if (strongCount >= 2) {
         return {
           label: "Weak",
           textColor: "text-yellow-400",

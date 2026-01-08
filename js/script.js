@@ -21,9 +21,9 @@ const GenerateForm = (() => {
         const {fields, title} = step;
 
         steps.innerHTML = config.map((_, idx) => `
-            <div class="flex items-center gap-2 group cursor-pointer shrink-0">
+            <div class="flex items-center gap-2 group">
                 <div class="step-pill w-8 h-8 rounded-xl flex items-center justify-center text-xs text-white border-2 transition-all 
-                    ${idx === state.currentStep ? 'border-black text-black bg-yellow-100' : idx < state.currentStep ? 'border-green-500 bg-green-100 text-black' : 'border-black text-black cursor-not-allowed'}">
+                    ${idx === state.currentStep ? 'border-black text-black bg-yellow-100' : idx < state.currentStep ? 'border-green-500 bg-green-100 text-black' : 'border-black text-black'}">
                     ${idx + 1}
                 </div>
             </div>
@@ -31,7 +31,7 @@ const GenerateForm = (() => {
 
         let generateFormElement = '';
         fields.forEach(formField => {
-            if (formField.dependsOn && state.data[formField.dependsOn.field] !== formField.dependsOn.value) return;
+            if (formField.dependableField && state.data[formField.dependableField.field] !== formField.dependableField.value) return;
             const fieldVal = state.data[formField.id] || '';
 
             if (formField.type === 'custom') {
@@ -72,29 +72,29 @@ const GenerateForm = (() => {
 
         backButton.disabled = state.currentStep === 0;
         nextButtonLabel.textContent = (state.currentStep === config.length - 1) ? 'Submit Application' : 'Continue';
-        updateValidation();
+        enableNext();
 
         stepsData.querySelectorAll('input, select').forEach(element => {
             element.oninput = (e) => {
                 const val = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
-                updateField(e.target.id, val);
+                updateFieldRender(e.target.id, val);
             };
         });
 
         if (activeId) {
-            const activeElement = document.getElementById(activeId);
-            if (activeElement) {
-                activeElement.focus();
+            const element = document.getElementById(activeId);
+            if (element) {
+                element.focus();
             }
         }
     };
 
-    const updateValidation = () => {
+    const enableNext = () => {
         const { fields } = config[state.currentStep];
     
         const isStepValid = fields.every(field => {
             const value = state.data[field.id] || '';
-            if (field.dependsOn && state.data[field.dependsOn.field] !== field.dependsOn.value) {
+            if (field.dependableField && state.data[field.dependableField.field] !== field.dependableField.value) {
                 return true;
             }
             if (!field.required && !value) return true;
@@ -108,7 +108,7 @@ const GenerateForm = (() => {
         nextButton.disabled = !isStepValid;
     };
 
-    const updateField = (key, val) => {
+    const updateFieldRender = (key, val) => {
         state.data[key] = val;
         const { fields } = config[state.currentStep];
     
@@ -116,12 +116,12 @@ const GenerateForm = (() => {
     
         const needsRebuild = 
             keysForRerender.includes(key) || 
-            fields.some(f => f.dependsOn?.field === key || (f.id === key && f.type === 'custom'));
+            fields.some(field => field.dependableField?.field === key || (field.id === key && field.type === 'custom'));
     
         if (needsRebuild) {
             createFormElement();
         } else {
-            updateValidation();
+            enableNext();
         }
     };
 
@@ -131,7 +131,6 @@ const GenerateForm = (() => {
                 if (state.currentStep < config.length - 1) {
                     state.currentStep++;
                     createFormElement();
-                    stepsData.scrollTop = 0;
                 } else {
                     main.innerHTML = `
                         <div class="p-20 text-center flex flex-col items-center justify-center step-entry-anim bg-white">
@@ -140,10 +139,15 @@ const GenerateForm = (() => {
                     `;
                 }
             };
-            backButton.onclick = () => { if (state.currentStep > 0) { state.currentStep--; createFormElement(); } };
+            backButton.onclick = () => {
+                if (state.currentStep > 0){
+                    state.currentStep--;
+                    createFormElement();
+                } 
+            };
             createFormElement();
         },
-        updateField,
+        updateFieldRender,
     };
 })();
 
